@@ -34,9 +34,19 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
         private static readonly string _installed_pcname_extract_keyword = "NTT 東日本 - IPA シン・テレワークシステム サーバー エンジンを起動しました。";
 
         /// <summary>
+        /// ログから｢詳細デバッグログを有効｣を設定しているPCを判断するためのキーワード
+        /// </summary>
+        private static readonly string _verbose_log_pcname_extract_keyword = "[DEBUG]";
+
+        /// <summary>
+        /// ログから｢プロセスの起動･終了を記録｣を設定しているPCを判断するためのキーワード
+        /// </summary>
+        private static readonly string _process_log_pcname_extract_keyword = "プロセスが起動されました。";
+
+        /// <summary>
         /// ログからインストール済みPC名を抽出するための正規表現パターン
         /// </summary>
-        private static readonly string _installed_pcname_extract_pattern = @"\[(?<pcname>.*)/Thin Telework System\]";
+        private static readonly string _pcname_extract_pattern = @"\[(?<pcname>.*)/Thin Telework System\]";
 
         /// <summary>
         /// ログからテレワークの開始を判断するためのキーワード(正規表現パターン)
@@ -52,7 +62,7 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
         /// ログからテレワークの開始･終了時のPC名･日時を抽出するための正規表現パターン
         /// </summary>
         private static readonly string _telework_info_extract_pattern = @"\[(?<pcname>.*)/Thin Telework System\].*(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2}).*(?<hour>\d{2}):(?<minutes>\d{2}):(?<second>\d{2})\..*\)";
-        
+
         #endregion
 
         #region バインディングデータ
@@ -84,6 +94,26 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
         {
             get { return _installed_pc_list; }
             set { SetProperty(ref _installed_pc_list, value); }
+        }
+
+        /// <summary>
+        /// バインディングデータ：詳細ログ出力PC
+        /// </summary>
+        private ObservableCollection<string> _vervose_log_pc_list = new ObservableCollection<string>();
+        public ObservableCollection<string> VervoseLogPCList
+        {
+            get { return _vervose_log_pc_list; }
+            set { SetProperty(ref _vervose_log_pc_list, value); }
+        }
+
+        /// <summary>
+        /// バインディングデータ：プロセスログ出力PC
+        /// </summary>
+        private ObservableCollection<string> _process_log_pc_list = new ObservableCollection<string>();
+        public ObservableCollection<string> ProcessLogPCList
+        {
+            get { return _process_log_pc_list; }
+            set { SetProperty(ref _process_log_pc_list, value); }
         }
 
         /// <summary>
@@ -177,6 +207,12 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
             // インストール済みPCの抽出を行う｡
             CreateInstalledPCList();
 
+            // 詳細ログ出力PCの抽出を行う｡
+            CreateVervoseLogPCList();
+
+            //プロセスログ出力PCの抽出を行う｡
+            CreateProcessLogPCList();
+
             // テレワーク状況の集約を行う｡
             CreateTeleworkStatus();
 
@@ -240,13 +276,75 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
 
                 if(readstring.Contains(_installed_pcname_extract_keyword))
                 {
-                    Regex r = new Regex(_installed_pcname_extract_pattern);
+                    Regex r = new Regex(_pcname_extract_pattern);
                     Match m = r.Match(readstring);
                     if (m.Success)
                     {
                         if (!InstalledPCList.Contains(m.Result("${pcname}")))
                         {
                             InstalledPCList.Add(m.Result("${pcname}"));
+                        }
+                    }
+                }
+            }
+            sr.Close();
+        }
+
+        /// <summary>
+        /// 詳細ログ出力PCリスト生成処理
+        /// </summary>
+        private void CreateVervoseLogPCList()
+        {
+            // 前回分のデータのクリア
+            VervoseLogPCList.Clear();
+
+            // ログファイルを開き､詳細デバッグログを検索する｡
+            // 見つかった場合は､PC名を抽出し､データを保存する｡
+            StreamReader sr = new StreamReader(LogFilePath);
+            while (sr.EndOfStream == false)
+            {
+                string readstring = sr.ReadLine();
+
+                if (readstring.Contains(_verbose_log_pcname_extract_keyword))
+                {
+                    Regex r = new Regex(_pcname_extract_pattern);
+                    Match m = r.Match(readstring);
+                    if (m.Success)
+                    {
+                        if (!VervoseLogPCList.Contains(m.Result("${pcname}")))
+                        {
+                            VervoseLogPCList.Add(m.Result("${pcname}"));
+                        }
+                    }
+                }
+            }
+            sr.Close();
+        }
+
+        /// <summary>
+        /// プロセスログ出力PCリスト生成処理
+        /// </summary>
+        private void CreateProcessLogPCList()
+        {
+            // 前回分のデータのクリア
+            ProcessLogPCList.Clear();
+
+            // ログファイルを開き､プロセスの開始･終了ログを検索する｡
+            // 見つかった場合は､PC名を抽出し､データを保存する｡
+            StreamReader sr = new StreamReader(LogFilePath);
+            while (sr.EndOfStream == false)
+            {
+                string readstring = sr.ReadLine();
+
+                if (readstring.Contains(_process_log_pcname_extract_keyword))
+                {
+                    Regex r = new Regex(_pcname_extract_pattern);
+                    Match m = r.Match(readstring);
+                    if (m.Success)
+                    {
+                        if (!ProcessLogPCList.Contains(m.Result("${pcname}")))
+                        {
+                            ProcessLogPCList.Add(m.Result("${pcname}"));
                         }
                     }
                 }
