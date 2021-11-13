@@ -164,11 +164,31 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
         /// <summary>
         /// ログファイルパス
         /// </summary>
-        private string _logfile_path;
+        private string _logfile_path = string.Empty;
         public string LogFilePath
         {
             get { return _logfile_path; }
             set { SetProperty(ref _logfile_path, value); }
+        }
+
+        /// <summary>
+        /// ログ開始日時
+        /// </summary>
+        private DateTime _log_start_Date = new DateTime(DateTime.MaxValue.Ticks);
+        public DateTime LogStartDate
+        {
+            get { return _log_start_Date; }
+            set { SetProperty(ref _log_start_Date, value); }
+        }
+
+        /// <summary>
+        /// ログ終了日時
+        /// </summary>
+        private DateTime _log_end_Date = new DateTime(DateTime.MinValue.Ticks);
+        public DateTime LogEndDate
+        {
+            get { return _log_end_Date; }
+            set { SetProperty(ref _log_end_Date, value); }
         }
         #endregion
 
@@ -210,14 +230,17 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
             // 詳細ログ出力PCの抽出を行う｡
             CreateVervoseLogPCList();
 
-            //プロセスログ出力PCの抽出を行う｡
+            // プロセスログ出力PCの抽出を行う｡
             CreateProcessLogPCList();
 
             // テレワーク状況の集約を行う｡
             CreateTeleworkStatus();
 
+            // ログの解析期間を算出する｡
+            CreateAnalyzePeriod();
+
             // 解析が完了したため､CSV出力機能有効化する｡
-            SystemStatus = "ログファイル読み込み&解析完了｡";
+            SystemStatus = "ログファイル読み込み&解析完了｡集計期間：" + LogStartDate.ToString() + "～" + LogEndDate.ToString();
             IsEnableExport = true;
         }
 
@@ -240,6 +263,7 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
 
             // インストール済みPCリストをCSV出力する｡
             StreamWriter swInstalledPCList = new StreamWriter(Path.Combine(dialog.FileName, "インストール済みPCリスト.csv"), false, System.Text.Encoding.UTF8);
+            swInstalledPCList.WriteLine("#集計期間：" + LogStartDate.ToString() + "～" + LogEndDate.ToString());
             swInstalledPCList.WriteLine("PC名");
             foreach(string str in InstalledPCList)
             {
@@ -249,6 +273,7 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
 
             // テレワーク状況をCSV出力する｡
             StreamWriter swTeleworkStatusList = new StreamWriter(Path.Combine(dialog.FileName, "テレワーク状況リスト.csv"), false, System.Text.Encoding.UTF8);
+            swTeleworkStatusList.WriteLine("#集計期間：" + LogStartDate.ToString() + "～" + LogEndDate.ToString());
             swTeleworkStatusList.WriteLine("PC名,テレワーク日,開始時刻,終了時刻");
             foreach (TeleworkStatus data in TeleworkStatusData)
             {
@@ -443,6 +468,40 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
             {
                 TeleworkStatusData[index].EndTime = time;
             }
+        }
+
+        /// <summary>
+        /// ログ解析期間算出処理
+        /// </summary>
+        private void CreateAnalyzePeriod()
+        {
+            // ログファイルを開き､ログファイルを解析期間を算出する｡
+            StreamReader sr = new StreamReader(LogFilePath);
+            while (sr.EndOfStream == false)
+            {
+                string readstring = sr.ReadLine();
+
+                Regex r = new Regex(_telework_info_extract_pattern);
+                Match m = r.Match(readstring);
+                if (m.Success)
+                {
+                    DateTime time = new DateTime(int.Parse(m.Result("${year}")),
+                                                    int.Parse(m.Result("${month}")),
+                                                    int.Parse(m.Result("${day}")),
+                                                    int.Parse(m.Result("${hour}")),
+                                                    int.Parse(m.Result("${minutes}")),
+                                                    int.Parse(m.Result("${second}")));
+                    if(time < LogStartDate)
+                    {
+                        LogStartDate = time;
+                    }
+                    if(LogEndDate < time)
+                    {
+                        LogEndDate = time;
+                    }
+                }
+            }
+            sr.Close();
         }
         #endregion
     }
