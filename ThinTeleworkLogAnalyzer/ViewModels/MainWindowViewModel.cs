@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
+using ThinTeleworkLogAnalyzer.Models;
 
 namespace ThinTeleworkLogAnalyzer.ViewModels
 {
@@ -26,48 +27,6 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
 
     public class MainWindowViewModel : BindableBase
     {
-        #region コンフィギュレーション
-        // NTT 東日本 - IPA 「シン・テレワークシステム」側でフォーマットが変更になった場合や､
-        // syslogサーバ側でフォーマットが変更になった場合は､以下設定の変更が必要｡
-
-        /// <summary>
-        /// ログからシステムの起動を判断するためのキーワード
-        /// このキーワードが含まれる場合､インストールされていると判断する｡
-        /// </summary>
-        private static readonly string _installed_pcname_extract_keyword = "NTT 東日本 - IPA シン・テレワークシステム サーバー エンジンを起動しました。";
-
-        /// <summary>
-        /// ログから｢詳細デバッグログを有効｣を設定しているPCを判断するためのキーワード
-        /// </summary>
-        private static readonly string _verbose_log_pcname_extract_keyword = "[DEBUG]";
-
-        /// <summary>
-        /// ログから｢プロセスの起動･終了を記録｣を設定しているPCを判断するためのキーワード
-        /// </summary>
-        private static readonly string _process_log_pcname_extract_keyword = "プロセスが起動されました。";
-
-        /// <summary>
-        /// ログからインストール済みPC名を抽出するための正規表現パターン
-        /// </summary>
-        private static readonly string _pcname_extract_pattern = @"\[(?<pcname>.*)/Thin Telework System\]";
-
-        /// <summary>
-        /// ログからテレワークの開始を判断するためのキーワード(正規表現パターン)
-        /// </summary>
-        private static readonly string _telework_start_pattern = @"このコンピュータとの間で新しい仮想通信チャネル ID: \d+ を確立しました。これにより、現在このコンピュータとの間で確立済みの仮想通信チャネルの総数は 1 本となりました。";
-
-        /// <summary>
-        /// ログからテレワークの終了を判断するためのキーワード(正規表現パターン)
-        /// </summary>
-        private static readonly string _telework_end_pattern = @"このコンピュータとの間で確立されていた仮想通信チャネル ID: \d+ を切断しました。.*これにより、現在このコンピュータとの間で確立済みの仮想通信チャネルの総数は 0 本となりました。";
-
-        /// <summary>
-        /// ログからテレワークの開始･終了時のPC名･日時を抽出するための正規表現パターン
-        /// </summary>
-        private static readonly string _telework_info_extract_pattern = @"\[(?<pcname>.*)/Thin Telework System\].*(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2}).*(?<hour>\d{2}):(?<minutes>\d{2}):(?<second>\d{2})\..*\)";
-
-        #endregion
-
         #region バインディングデータ
         /// <summary>
         /// バインディングデータ：タイトル
@@ -302,9 +261,9 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
             {
                 string readstring = sr.ReadLine();
 
-                if(readstring.Contains(_installed_pcname_extract_keyword))
+                if(readstring.Contains(Config.ExtractKeywordInstalled))
                 {
-                    Regex r = new Regex(_pcname_extract_pattern);
+                    Regex r = new Regex(Config.ExtractPatternPCNameDateInfo);
                     Match m = r.Match(readstring);
                     if (m.Success)
                     {
@@ -333,9 +292,9 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
             {
                 string readstring = sr.ReadLine();
 
-                if (readstring.Contains(_verbose_log_pcname_extract_keyword))
+                if (readstring.Contains(Config.ExtractKeywordEnableVerboseLog))
                 {
-                    Regex r = new Regex(_pcname_extract_pattern);
+                    Regex r = new Regex(Config.ExtractPatternPCNameDateInfo);
                     Match m = r.Match(readstring);
                     if (m.Success)
                     {
@@ -364,9 +323,9 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
             {
                 string readstring = sr.ReadLine();
 
-                if (readstring.Contains(_process_log_pcname_extract_keyword))
+                if (readstring.Contains(Config.ExtractKeywordEnableProcessLog))
                 {
-                    Regex r = new Regex(_pcname_extract_pattern);
+                    Regex r = new Regex(Config.ExtractPatternPCNameDateInfo);
                     Match m = r.Match(readstring);
                     if (m.Success)
                     {
@@ -395,9 +354,9 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
                 string readstring = sr.ReadLine();
 
                 // テレワーク開始のログが見つかった場合､PC名と日時を抽出し､テレワーク開始のデータを保存する｡
-                if (Regex.IsMatch(readstring, _telework_start_pattern))
+                if (Regex.IsMatch(readstring, Config.ExtractPatternStartTelework))
                 {
-                    Regex r = new Regex(_telework_info_extract_pattern);
+                    Regex r = new Regex(Config.ExtractPatternPCNameDateInfo);
                     Match m = r.Match(readstring);
                     if (m.Success)
                     {
@@ -413,9 +372,9 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
                 }
 
                 // テレワーク終了のログが見つかった場合､PC名と日時を抽出し､テレワーク終了のデータを保存する｡
-                if (Regex.IsMatch(readstring, _telework_end_pattern))
+                if (Regex.IsMatch(readstring, Config.ExtractPatternEndTelework))
                 {
-                    Regex r = new Regex(_telework_info_extract_pattern);
+                    Regex r = new Regex(Config.ExtractPatternPCNameDateInfo);
                     Match m = r.Match(readstring);
                     if (m.Success)
                     {
@@ -529,7 +488,7 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
             {
                 string readstring = sr.ReadLine();
 
-                Regex r = new Regex(_telework_info_extract_pattern);
+                Regex r = new Regex(Config.ExtractPatternPCNameDateInfo);
                 Match m = r.Match(readstring);
                 if (m.Success)
                 {
