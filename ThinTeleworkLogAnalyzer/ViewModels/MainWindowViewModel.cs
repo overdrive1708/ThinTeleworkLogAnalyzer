@@ -228,21 +228,21 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
 
             // インストール済みPCリストをCSV出力する｡
             StreamWriter swInstalledPCList = new StreamWriter(Path.Combine(dialog.FileName, "インストール済みPCリスト.csv"), false, System.Text.Encoding.UTF8);
-            swInstalledPCList.WriteLine("#集計期間：" + LogStartDate.ToString() + "～" + LogEndDate.ToString());
-            swInstalledPCList.WriteLine("PC名");
+            swInstalledPCList.WriteLine("#集計期間:" + LogStartDate.ToString() + "～" + LogEndDate.ToString());
+            swInstalledPCList.WriteLine("\"PC名\"");
             foreach(string str in InstalledPCList)
             {
-                swInstalledPCList.WriteLine(string.Format("{0}", str));
+                swInstalledPCList.WriteLine(string.Format("\"{0}\"", str));
             }
             swInstalledPCList.Close();
 
             // テレワーク状況をCSV出力する｡
             StreamWriter swTeleworkStatusList = new StreamWriter(Path.Combine(dialog.FileName, "テレワーク状況リスト.csv"), false, System.Text.Encoding.UTF8);
-            swTeleworkStatusList.WriteLine("#集計期間：" + LogStartDate.ToString() + "～" + LogEndDate.ToString());
-            swTeleworkStatusList.WriteLine("PC名,テレワーク日,開始時刻,終了時刻,接続時間,備考");
+            swTeleworkStatusList.WriteLine("#集計期間:" + LogStartDate.ToString() + "～" + LogEndDate.ToString());
+            swTeleworkStatusList.WriteLine("\"PC名\",\"テレワーク日\",\"開始時刻\",\"終了時刻\",\"接続時間\",\"備考\"");
             foreach (TeleworkStatus data in TeleworkStatusData)
             {
-                swTeleworkStatusList.WriteLine(string.Format("{0},{1},{2},{3},{4},{5}", data.PCName, data.Date.ToString("yyyy/MM/dd"), data.StartTime.ToString("HH:mm:ss"), data.EndTime.ToString("HH:mm:ss"), data.ConnectTime, data.Remarks));
+                swTeleworkStatusList.WriteLine(string.Format("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\"", data.PCName, data.Date.ToString("yyyy/MM/dd"), data.StartTime.ToString("HH:mm:ss"), data.EndTime.ToString("HH:mm:ss"), data.ConnectTime, data.Remarks));
             }
             swTeleworkStatusList.Close();
 
