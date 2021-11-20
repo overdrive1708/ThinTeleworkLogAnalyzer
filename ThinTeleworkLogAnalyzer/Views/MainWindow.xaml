@@ -46,9 +46,22 @@
             Grid.ColumnSpan="2"
             Header="インストール済みPC">
 
-            <ListBox
-                ItemsSource="{Binding Path=InstalledPCList}"
-                ScrollViewer.VerticalScrollBarVisibility="Visible" />
+            <DataGrid
+                AutoGenerateColumns="False"
+                IsReadOnly="True"
+                ItemsSource="{Binding Path=InstalledPCList}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn
+                        Binding="{Binding Path=PCName}"
+                        Header="PC名" />
+                    <DataGridTextColumn
+                        Binding="{Binding Path=Version}"
+                        Header="Version" />
+                    <DataGridTextColumn
+                        Binding="{Binding Path=Build}"
+                        Header="Build" />
+                </DataGrid.Columns>
+            </DataGrid>
         </GroupBox>
 
         <GroupBox

@@ -52,8 +52,8 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
         /// <summary>
         /// バインディングデータ：インストール済みPC
         /// </summary>
-        private ObservableCollection<string> _installed_pc_list = new ObservableCollection<string>();
-        public ObservableCollection<string> InstalledPCList
+        private ObservableCollection<InstalledPCInfo> _installed_pc_list = new ObservableCollection<InstalledPCInfo>();
+        public ObservableCollection<InstalledPCInfo> InstalledPCList
         {
             get { return _installed_pc_list; }
             set { SetProperty(ref _installed_pc_list, value); }
@@ -190,7 +190,7 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
             }
 
             // インストール済みPCの抽出を行う｡
-            CreateInstalledPCList();
+            InstalledPCList = InstalledPC.GetInstalledPCList(LogFilePath);
 
             // 詳細ログ出力PCの抽出を行う｡
             CreateVervoseLogPCList();
@@ -229,10 +229,10 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
             // インストール済みPCリストをCSV出力する｡
             StreamWriter swInstalledPCList = new StreamWriter(Path.Combine(dialog.FileName, "インストール済みPCリスト.csv"), false, System.Text.Encoding.UTF8);
             swInstalledPCList.WriteLine("#集計期間:" + LogStartDate.ToString() + "～" + LogEndDate.ToString());
-            swInstalledPCList.WriteLine("\"PC名\"");
-            foreach(string str in InstalledPCList)
+            swInstalledPCList.WriteLine("\"PC名\",\"Version\",\"Build\"");
+            foreach(InstalledPCInfo installedPCinfo in InstalledPCList)
             {
-                swInstalledPCList.WriteLine(string.Format("\"{0}\"", str));
+                swInstalledPCList.WriteLine(string.Format("\"{0}\",\"{1}\",\"{2}\"", installedPCinfo.PCName, installedPCinfo.Version, installedPCinfo.Build));
             }
             swInstalledPCList.Close();
 
@@ -247,37 +247,6 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
             swTeleworkStatusList.Close();
 
             MessageBox.Show("CSV出力が完了しました｡", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        /// <summary>
-        /// インストール済みPCリスト生成処理
-        /// </summary>
-        private void CreateInstalledPCList()
-        {
-            // 前回分のデータのクリア
-            InstalledPCList.Clear();
-
-            // ログファイルを開き､システムの起動ログを検索する｡
-            // 見つかった場合は､PC名を抽出し､データを保存する｡
-            StreamReader sr = new StreamReader(LogFilePath);
-            while (sr.EndOfStream == false)
-            {
-                string readstring = sr.ReadLine();
-
-                if(readstring.Contains(Config.ExtractKeywordInstalled))
-                {
-                    Regex r = new Regex(Config.ExtractPatternPCNameDateInfo);
-                    Match m = r.Match(readstring);
-                    if (m.Success)
-                    {
-                        if (!InstalledPCList.Contains(m.Result("${pcname}")))
-                        {
-                            InstalledPCList.Add(m.Result("${pcname}"));
-                        }
-                    }
-                }
-            }
-            sr.Close();
         }
 
         /// <summary>

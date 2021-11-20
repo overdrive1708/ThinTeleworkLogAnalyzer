@@ -99,6 +99,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Models\Config.cs" />
+    <Compile Include="Models\InstalledPC.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

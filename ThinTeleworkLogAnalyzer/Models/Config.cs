@@ -1,15 +1,17 @@
 ﻿namespace ThinTeleworkLogAnalyzer.Models
 {
+    /// <summary>
+    /// コンフィギュレーション
+    /// </summary>
     public class Config
     {
         // NTT 東日本 - IPA 「シン・テレワークシステム」側でフォーマットが変更になった場合や､
         // syslogサーバ側でフォーマットが変更になった場合は､以下設定の変更が必要｡
 
         /// <summary>
-        /// ログからシステムの起動を判断するためのキーワード
-        /// このキーワードが含まれる場合､インストールされていると判断する｡
+        /// ログからインストール済みPCのPC名･Version情報･Build情報を抽出するための正規表現パターン
         /// </summary>
-        public static readonly string ExtractKeywordInstalled = "NTT 東日本 - IPA シン・テレワークシステム サーバー エンジンを起動しました。";
+        public static readonly string ExtractPatternInstallInfo = @"\[(?<pcname>.*)/Thin Telework System\].*NTT 東日本 - IPA シン・テレワークシステム サーバー.*Version (?<version>.*) Build (?<build>.*)";
 
         /// <summary>
         /// ログから｢詳細デバッグログを有効｣を設定しているPCを判断するためのキーワード
