@@ -5,6 +5,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
 using ThinTeleworkLogAnalyzer.Models;
@@ -160,7 +161,9 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
         /// </summary>
         public MainWindowViewModel()
         {
-            // 無処理
+            // バージョン情報をタイトルに表示する｡
+            Assembly assm = Assembly.GetExecutingAssembly();
+            Title = Title + " | Version:" +  assm.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version.ToString() ;
         }
 
         /// <summary>
