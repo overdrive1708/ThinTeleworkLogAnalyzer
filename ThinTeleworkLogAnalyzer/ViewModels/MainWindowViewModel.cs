@@ -2,7 +2,6 @@
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -17,8 +16,12 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
     public class TeleworkStatus
     {
         public string PCName { get; set; }          // PC名
+        public DateTime Date { get; set; }          // テレワーク日
         public DateTime StartTime { get; set; }     // 開始時刻
         public DateTime EndTime { get; set; }       // 終了時刻
+        public bool IsNowTeleworking { get; set; }  // テレワーク中フラグ
+        public string ConnectTime { get; set; }     // 接続時間
+        public string Remarks { get; set; }         // 備考
     }
 
     public class MainWindowViewModel : BindableBase
@@ -274,10 +277,10 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
             // テレワーク状況をCSV出力する｡
             StreamWriter swTeleworkStatusList = new StreamWriter(Path.Combine(dialog.FileName, "テレワーク状況リスト.csv"), false, System.Text.Encoding.UTF8);
             swTeleworkStatusList.WriteLine("#集計期間：" + LogStartDate.ToString() + "～" + LogEndDate.ToString());
-            swTeleworkStatusList.WriteLine("PC名,テレワーク日,開始時刻,終了時刻");
+            swTeleworkStatusList.WriteLine("PC名,テレワーク日,開始時刻,終了時刻,接続時間,備考");
             foreach (TeleworkStatus data in TeleworkStatusData)
             {
-                swTeleworkStatusList.WriteLine(string.Format("{0},{1},{2},{3}", data.PCName, data.StartTime.ToShortDateString(), data.StartTime.ToLongTimeString(), data.EndTime.ToLongTimeString()));
+                swTeleworkStatusList.WriteLine(string.Format("{0},{1},{2},{3},{4},{5}", data.PCName, data.Date.ToString("yyyy/MM/dd"), data.StartTime.ToString("HH:mm:ss"), data.EndTime.ToString("HH:mm:ss"), data.ConnectTime, data.Remarks));
             }
             swTeleworkStatusList.Close();
 
@@ -428,6 +431,29 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
                 }
             }
             sr.Close();
+
+            // 欠測のチェックと接続時間の計算
+            for (int cnt = 0; cnt < TeleworkStatusData.Count(); cnt++)
+            {
+                TeleworkStatus work = TeleworkStatusData[cnt];
+                if(work.StartTime == DateTime.MinValue)
+                {
+                    work.ConnectTime = "--:--:--";
+                    work.Remarks = "開始時刻:欠測";
+                }
+                else if(work.EndTime == DateTime.MinValue)
+                {
+                    work.ConnectTime = "--:--:--";
+                    work.Remarks = "終了時刻:欠測";
+                }
+                else
+                {
+                    TimeSpan elapsedTime = work.EndTime - work.StartTime;
+                    work.ConnectTime = elapsedTime.ToString("c");
+                    work.Remarks = "－";
+                }
+                TeleworkStatusData[cnt] = work;
+            }
         }
 
         /// <summary>
@@ -437,21 +463,27 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
         /// <param name="time">テレワーク開始日時</param>
         private void InsertTeleworkStatusStartTime(string pcname, DateTime time)
         {
-            // PC名･日付の組み合わせで新規登録のみ行う｡
-            // (ネットワークが切断された場合は､一日の最初と一日の最後を記録する｡)
-            IEnumerable<int> foundItems = TeleworkStatusData.Select((item, index) => new { Index = index, Value = item })
-                .Where(item => item.Value.PCName == pcname && item.Value.StartTime.Date == time.Date)
-                .Select(item => item.Index);
-            if(foundItems.Count() == 0)
+            // テレワーク中の情報が記録されている場合､終了時間を欠測したと判断する｡
+            TeleworkStatus found = TeleworkStatusData.FirstOrDefault(item => item.PCName == pcname && item.IsNowTeleworking);
+            int index = TeleworkStatusData.IndexOf(found);
+            if (index >= 0)
             {
-                TeleworkStatus startData = new TeleworkStatus
-                {
-                    PCName = pcname,
-                    StartTime = time,
-                    EndTime = new DateTime()
-                };
-                TeleworkStatusData.Add(startData);
+                TeleworkStatusData[index].EndTime = DateTime.MinValue;
+                TeleworkStatusData[index].IsNowTeleworking = false;
             }
+
+            // テレワーク開始で登録する｡
+            TeleworkStatus startData = new TeleworkStatus
+            {
+                PCName = pcname,
+                Date = time,
+                StartTime = time,
+                EndTime = DateTime.MinValue,
+                IsNowTeleworking = true,
+                ConnectTime = string.Empty,
+                Remarks = string.Empty
+            };
+            TeleworkStatusData.Add(startData);
         }
 
         /// <summary>
@@ -461,12 +493,28 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
         /// <param name="time">テレワーク終了日時</param>
         private void InsertTeleworkStatusEndTime(string pcname, DateTime time)
         {
-            // PC名･日付の組み合わせで開始時刻登録済みのデータについて､終了時刻を更新する｡
-            TeleworkStatus found = TeleworkStatusData.FirstOrDefault(item => item.PCName == pcname && item.StartTime.Date == time.Date);
+            // テレワーク中の情報に対して､終了時刻を書き込む｡
+            // テレワーク中の情報が見つからない場合､開始時間を欠測したと判断する｡
+            TeleworkStatus found = TeleworkStatusData.FirstOrDefault(item => item.PCName == pcname && item.IsNowTeleworking);
             int index = TeleworkStatusData.IndexOf(found);
             if (index >= 0)
             {
                 TeleworkStatusData[index].EndTime = time;
+                TeleworkStatusData[index].IsNowTeleworking = false;
+            }
+            else
+            {
+                TeleworkStatus startData = new TeleworkStatus
+                {
+                    PCName = pcname,
+                    Date = time,
+                    StartTime = DateTime.MinValue,
+                    EndTime = time,
+                    IsNowTeleworking = false,
+                    ConnectTime = string.Empty,
+                    Remarks = string.Empty
+                };
+                TeleworkStatusData.Add(startData);
             }
         }
 

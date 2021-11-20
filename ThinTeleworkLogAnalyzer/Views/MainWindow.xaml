@@ -28,11 +28,11 @@
 
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
@@ -43,6 +43,7 @@
         <GroupBox
             Grid.Row="0"
             Grid.Column="0"
+            Grid.ColumnSpan="2"
             Header="インストール済みPC">
 
             <ListBox
@@ -51,8 +52,8 @@
         </GroupBox>
 
         <GroupBox
-            Grid.Row="0"
-            Grid.Column="1"
+            Grid.Row="1"
+            Grid.Column="0"
             Header="詳細ログ出力PC">
 
             <ListBox
@@ -61,8 +62,8 @@
         </GroupBox>
 
         <GroupBox
-            Grid.Row="0"
-            Grid.Column="2"
+            Grid.Row="1"
+            Grid.Column="1"
             Header="プロセスログ出力PC">
 
             <ListBox
@@ -72,7 +73,8 @@
 
         <GroupBox
             Grid.Row="0"
-            Grid.Column="3"
+            Grid.RowSpan="2"
+            Grid.Column="2"
             Header="テレワーク状況">
 
             <DataGrid
@@ -84,7 +86,7 @@
                         Binding="{Binding Path=PCName}"
                         Header="PC名" />
                     <DataGridTextColumn
-                        Binding="{Binding Path=StartTime, StringFormat=yyyy/MM/dd}"
+                        Binding="{Binding Path=Date, StringFormat=yyyy/MM/dd}"
                         Header="テレワーク日" />
                     <DataGridTextColumn
                         Binding="{Binding Path=StartTime, StringFormat=HH:mm:ss}"
@@ -92,14 +94,20 @@
                     <DataGridTextColumn
                         Binding="{Binding Path=EndTime, StringFormat=HH:mm:ss}"
                         Header="終了時刻" />
+                    <DataGridTextColumn
+                        Binding="{Binding Path=ConnectTime}"
+                        Header="接続時間" />
+                    <DataGridTextColumn
+                        Binding="{Binding Path=Remarks}"
+                        Header="備考" />
                 </DataGrid.Columns>
             </DataGrid>
         </GroupBox>
 
         <Button
-            Grid.Row="1"
+            Grid.Row="2"
             Grid.Column="0"
-            Grid.ColumnSpan="4"
+            Grid.ColumnSpan="3"
             Height="50"
             Margin="0,5,0,5"
             Command="{Binding Path=Command_Export}"
@@ -107,9 +115,9 @@
             IsEnabled="{Binding Path=IsEnableExport}" />
 
         <TextBlock
-            Grid.Row="2"
+            Grid.Row="3"
             Grid.Column="0"
-            Grid.ColumnSpan="4"
+            Grid.ColumnSpan="3"
             Text="{Binding Path=SystemStatus}" />
     </Grid>
 </Window>
