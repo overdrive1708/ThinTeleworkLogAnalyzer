@@ -47,6 +47,7 @@
 
             <DataGrid
                 AutoGenerateColumns="False"
+                HeadersVisibility="Column"
                 IsReadOnly="True"
                 ItemsSource="{Binding Path=InstalledPCList}">
                 <DataGrid.Columns>
@@ -70,6 +71,7 @@
 
             <DataGrid
                 AutoGenerateColumns="False"
+                HeadersVisibility="Column"
                 IsReadOnly="True"
                 ItemsSource="{Binding Path=VervoseLogPCList}">
                 <DataGrid.Columns>
@@ -101,6 +103,7 @@
 
             <DataGrid
                 AutoGenerateColumns="False"
+                HeadersVisibility="Column"
                 IsReadOnly="True"
                 ItemsSource="{Binding Path=TeleworkStatusData}">
                 <DataGrid.Columns>
