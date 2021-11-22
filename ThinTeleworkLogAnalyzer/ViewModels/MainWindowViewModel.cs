@@ -360,6 +360,24 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
                         InsertTeleworkStatusEndTime(pcname, time);
                     }
                 }
+
+                // テレワーク中にテレワーク終了のログが欠測し､シャットダウンのログが見つかった場合､テレワーク終了のデータとして扱う｡
+                if (readstring.Contains(Config.ExtractKeywordShutdown))
+                {
+                    Regex r = new Regex(Config.ExtractPatternPCNameDateInfo);
+                    Match m = r.Match(readstring);
+                    if (m.Success)
+                    {
+                        string pcname = m.Result("${pcname}");
+                        DateTime time = new DateTime(int.Parse(m.Result("${year}")),
+                                                        int.Parse(m.Result("${month}")),
+                                                        int.Parse(m.Result("${day}")),
+                                                        int.Parse(m.Result("${hour}")),
+                                                        int.Parse(m.Result("${minutes}")),
+                                                        int.Parse(m.Result("${second}")));
+                        UpdateTeleworkStatusEndTime(pcname, time);
+                    }
+                }
             }
             sr.Close();
 
@@ -446,6 +464,24 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
                     Remarks = string.Empty
                 };
                 TeleworkStatusData.Add(startData);
+            }
+        }
+
+        /// <summary>
+        /// テレワーク終了データ更新処理
+        /// </summary>
+        /// <param name="pcname">PC名</param>
+        /// <param name="time">テレワーク終了日時</param>
+        private void UpdateTeleworkStatusEndTime(string pcname, DateTime time)
+        {
+            // テレワーク中の情報が見つかった場合は､切断ログを取りこぼしたものとして終了時間を更新する｡
+            // テレワークをしない日でもシャットダウンのログが残るため､更新のみを行う｡
+            TeleworkStatus found = TeleworkStatusData.FirstOrDefault(item => item.PCName == pcname && item.IsNowTeleworking);
+            int index = TeleworkStatusData.IndexOf(found);
+            if (index >= 0)
+            {
+                TeleworkStatusData[index].EndTime = time;
+                TeleworkStatusData[index].IsNowTeleworking = false;
             }
         }
 

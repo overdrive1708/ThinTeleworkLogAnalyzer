@@ -32,6 +32,7 @@
         /// ログからテレワークの終了を判断するための正規表現パターン
         /// </summary>
         public static readonly string ExtractPatternEndTelework = @"このコンピュータとの間で確立されていた仮想通信チャネル ID: \d+ を切断しました。.*これにより、現在このコンピュータとの間で確立済みの仮想通信チャネルの総数は 0 本となりました。";
+        public static readonly string ExtractKeywordShutdown = @"NTT 東日本 - IPA シン・テレワークシステム サーバー エンジンをシャットダウンしています...";
 
         /// <summary>
         /// ログからPC名･日時を抽出するための正規表現パターン
