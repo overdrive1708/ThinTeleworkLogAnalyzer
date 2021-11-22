@@ -29,11 +29,11 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
@@ -43,7 +43,6 @@
         <GroupBox
             Grid.Row="0"
             Grid.Column="0"
-            Grid.ColumnSpan="2"
             Header="インストール済みPC">
 
             <DataGrid
@@ -69,14 +68,24 @@
             Grid.Column="0"
             Header="詳細ログ出力PC">
 
-            <ListBox
-                ItemsSource="{Binding Path=VervoseLogPCList}"
-                ScrollViewer.VerticalScrollBarVisibility="Visible" />
+            <DataGrid
+                AutoGenerateColumns="False"
+                IsReadOnly="True"
+                ItemsSource="{Binding Path=VervoseLogPCList}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn
+                        Binding="{Binding Path=PCName}"
+                        Header="PC名" />
+                    <DataGridTextColumn
+                        Binding="{Binding Path=DetectDate}"
+                        Header="検知日" />
+                </DataGrid.Columns>
+            </DataGrid>
         </GroupBox>
 
         <GroupBox
-            Grid.Row="1"
-            Grid.Column="1"
+            Grid.Row="2"
+            Grid.Column="0"
             Header="プロセスログ出力PC">
 
             <ListBox
@@ -86,7 +95,7 @@
 
         <GroupBox
             Grid.Row="0"
-            Grid.RowSpan="2"
+            Grid.RowSpan="3"
             Grid.Column="2"
             Header="テレワーク状況">
 
@@ -118,9 +127,9 @@
         </GroupBox>
 
         <Button
-            Grid.Row="2"
+            Grid.Row="3"
             Grid.Column="0"
-            Grid.ColumnSpan="3"
+            Grid.ColumnSpan="2"
             Height="50"
             Margin="0,5,0,5"
             Command="{Binding Path=Command_Export}"
@@ -128,9 +137,9 @@
             IsEnabled="{Binding Path=IsEnableExport}" />
 
         <TextBlock
-            Grid.Row="3"
+            Grid.Row="4"
             Grid.Column="0"
-            Grid.ColumnSpan="3"
+            Grid.ColumnSpan="2"
             Text="{Binding Path=SystemStatus}" />
     </Grid>
 </Window>

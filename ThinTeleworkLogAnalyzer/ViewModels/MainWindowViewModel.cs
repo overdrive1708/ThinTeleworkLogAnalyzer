@@ -62,8 +62,8 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
         /// <summary>
         /// バインディングデータ：詳細ログ出力PC
         /// </summary>
-        private ObservableCollection<string> _vervose_log_pc_list = new ObservableCollection<string>();
-        public ObservableCollection<string> VervoseLogPCList
+        private ObservableCollection<VervoseLogPCInfo> _vervose_log_pc_list = new ObservableCollection<VervoseLogPCInfo>();
+        public ObservableCollection<VervoseLogPCInfo> VervoseLogPCList
         {
             get { return _vervose_log_pc_list; }
             set { SetProperty(ref _vervose_log_pc_list, value); }
@@ -193,7 +193,7 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
             InstalledPCList = InstalledPC.GetInstalledPCList(LogFilePath);
 
             // 詳細ログ出力PCの抽出を行う｡
-            CreateVervoseLogPCList();
+            VervoseLogPCList = VervoseLogPC.GetVervoseLogPCList(LogFilePath);
 
             // プロセスログ出力PCの抽出を行う｡
             CreateProcessLogPCList();
@@ -247,37 +247,6 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
             swTeleworkStatusList.Close();
 
             MessageBox.Show("CSV出力が完了しました｡", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        /// <summary>
-        /// 詳細ログ出力PCリスト生成処理
-        /// </summary>
-        private void CreateVervoseLogPCList()
-        {
-            // 前回分のデータのクリア
-            VervoseLogPCList.Clear();
-
-            // ログファイルを開き､詳細デバッグログを検索する｡
-            // 見つかった場合は､PC名を抽出し､データを保存する｡
-            StreamReader sr = new StreamReader(LogFilePath);
-            while (sr.EndOfStream == false)
-            {
-                string readstring = sr.ReadLine();
-
-                if (readstring.Contains(Config.ExtractKeywordEnableVerboseLog))
-                {
-                    Regex r = new Regex(Config.ExtractPatternPCNameDateInfo);
-                    Match m = r.Match(readstring);
-                    if (m.Success)
-                    {
-                        if (!VervoseLogPCList.Contains(m.Result("${pcname}")))
-                        {
-                            VervoseLogPCList.Add(m.Result("${pcname}"));
-                        }
-                    }
-                }
-            }
-            sr.Close();
         }
 
         /// <summary>
