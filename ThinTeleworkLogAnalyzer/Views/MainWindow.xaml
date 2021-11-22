@@ -90,9 +90,20 @@
             Grid.Column="0"
             Header="プロセスログ出力PC">
 
-            <ListBox
-                ItemsSource="{Binding Path=ProcessLogPCList}"
-                ScrollViewer.VerticalScrollBarVisibility="Visible" />
+            <DataGrid
+                AutoGenerateColumns="False"
+                HeadersVisibility="Column"
+                IsReadOnly="True"
+                ItemsSource="{Binding Path=ProcessLogPCList}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn
+                        Binding="{Binding Path=PCName}"
+                        Header="PC名" />
+                    <DataGridTextColumn
+                        Binding="{Binding Path=DetectDate}"
+                        Header="検知日" />
+                </DataGrid.Columns>
+            </DataGrid>
         </GroupBox>
 
         <GroupBox

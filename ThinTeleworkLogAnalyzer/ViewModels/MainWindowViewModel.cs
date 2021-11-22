@@ -72,8 +72,8 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
         /// <summary>
         /// バインディングデータ：プロセスログ出力PC
         /// </summary>
-        private ObservableCollection<string> _process_log_pc_list = new ObservableCollection<string>();
-        public ObservableCollection<string> ProcessLogPCList
+        private ObservableCollection<ProcessLogPCInfo> _process_log_pc_list = new ObservableCollection<ProcessLogPCInfo>();
+        public ObservableCollection<ProcessLogPCInfo> ProcessLogPCList
         {
             get { return _process_log_pc_list; }
             set { SetProperty(ref _process_log_pc_list, value); }
@@ -196,7 +196,7 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
             VervoseLogPCList = VervoseLogPC.GetVervoseLogPCList(LogFilePath);
 
             // プロセスログ出力PCの抽出を行う｡
-            CreateProcessLogPCList();
+            ProcessLogPCList = ProcessLogPC.GetProcessLogPCList(LogFilePath);
 
             // テレワーク状況の集約を行う｡
             CreateTeleworkStatus();
@@ -247,37 +247,6 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
             swTeleworkStatusList.Close();
 
             MessageBox.Show("CSV出力が完了しました｡", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        /// <summary>
-        /// プロセスログ出力PCリスト生成処理
-        /// </summary>
-        private void CreateProcessLogPCList()
-        {
-            // 前回分のデータのクリア
-            ProcessLogPCList.Clear();
-
-            // ログファイルを開き､プロセスの開始･終了ログを検索する｡
-            // 見つかった場合は､PC名を抽出し､データを保存する｡
-            StreamReader sr = new StreamReader(LogFilePath);
-            while (sr.EndOfStream == false)
-            {
-                string readstring = sr.ReadLine();
-
-                if (readstring.Contains(Config.ExtractKeywordEnableProcessLog))
-                {
-                    Regex r = new Regex(Config.ExtractPatternPCNameDateInfo);
-                    Match m = r.Match(readstring);
-                    if (m.Success)
-                    {
-                        if (!ProcessLogPCList.Contains(m.Result("${pcname}")))
-                        {
-                            ProcessLogPCList.Add(m.Result("${pcname}"));
-                        }
-                    }
-                }
-            }
-            sr.Close();
         }
 
         /// <summary>
