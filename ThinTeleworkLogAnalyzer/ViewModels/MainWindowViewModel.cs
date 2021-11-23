@@ -21,9 +21,10 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
         public DateTime Date { get; set; }          // テレワーク日
         public DateTime StartTime { get; set; }     // 開始時刻
         public DateTime EndTime { get; set; }       // 終了時刻
-        public bool IsNowTeleworking { get; set; }  // テレワーク中フラグ
         public string ConnectTime { get; set; }     // 接続時間
         public string Remarks { get; set; }         // 備考
+        public bool IsNowTeleworking { get; set; }  // テレワーク中フラグ
+        public bool IsShutdownEnd { get; set; }     // シャットダウン要因での終了フラグ
     }
 
     public class MainWindowViewModel : BindableBase
@@ -367,6 +368,7 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
                 StartTime = time,
                 EndTime = DateTime.MinValue,
                 IsNowTeleworking = true,
+                IsShutdownEnd = false,
                 ConnectTime = string.Empty,
                 Remarks = string.Empty
             };
@@ -391,17 +393,23 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
             }
             else
             {
-                TeleworkStatus startData = new TeleworkStatus
+                TeleworkStatus foundShutdown = TeleworkStatusData.FirstOrDefault(item => item.PCName == pcname && item.EndTime.Date == time.Date && item.IsShutdownEnd);
+                int indexShutdown = TeleworkStatusData.IndexOf(foundShutdown);
+                if (indexShutdown < 0)
                 {
-                    PCName = pcname,
-                    Date = time,
-                    StartTime = DateTime.MinValue,
-                    EndTime = time,
-                    IsNowTeleworking = false,
-                    ConnectTime = string.Empty,
-                    Remarks = string.Empty
-                };
-                TeleworkStatusData.Add(startData);
+                    TeleworkStatus startData = new TeleworkStatus
+                    {
+                        PCName = pcname,
+                        Date = time,
+                        StartTime = DateTime.MinValue,
+                        EndTime = time,
+                        IsNowTeleworking = false,
+                        IsShutdownEnd = false,
+                        ConnectTime = string.Empty,
+                        Remarks = string.Empty
+                    };
+                    TeleworkStatusData.Add(startData);
+                }
             }
         }
 
@@ -420,6 +428,7 @@ namespace ThinTeleworkLogAnalyzer.ViewModels
             {
                 TeleworkStatusData[index].EndTime = time;
                 TeleworkStatusData[index].IsNowTeleworking = false;
+                TeleworkStatusData[index].IsShutdownEnd = true;
             }
         }
 
