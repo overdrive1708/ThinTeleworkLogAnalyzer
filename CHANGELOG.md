@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.2.0.0] - 2021-11-23
+
+### Changed
+
+- Changed the logic for determining the start of telework and the end of telework.
+- Changed the window layout.
+- Divided the any pc information class.
+
 ## [1.1.0.0] - 2021-11-20
 
 ### Added
@@ -39,5 +47,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Initial version.
 
 [Unreleased]: https://github.com/overdrive1708/ThinTeleworkLogAnalyzer
-[1.0.0.0]: https://github.com/overdrive1708/ThinTeleworkLogAnalyzer/releases/tag/Ver.1.0.0.0
+[1.2.0.0]: https://github.com/overdrive1708/ThinTeleworkLogAnalyzer/releases/tag/Ver.1.2.0.0
 [1.1.0.0]: https://github.com/overdrive1708/ThinTeleworkLogAnalyzer/releases/tag/Ver.1.1.0.0
+[1.0.0.0]: https://github.com/overdrive1708/ThinTeleworkLogAnalyzer/releases/tag/Ver.1.0.0.0
