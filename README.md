@@ -23,9 +23,7 @@ ThinTeleworkLogAnalyzer/publish/setup.exeを実行してください｡
 
 ## 【開発環境】
 
- - Microsoft Visual Studio Community 2019  
-Version 16.11.5  
-
+ - Microsoft Visual Studio Community 2022  
  - Microsoft .NET Framework  
 Version 4.8.04084  
 
